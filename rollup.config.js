@@ -7,7 +7,7 @@ export default{
         file:'dist/umd/vue.js',
         name:'Vue', 
         format:'umd',//统一的的模块规范
-        souermap:true,//开启源码调试
+        sourcemap:true,//开启源码调试
     },
     plugins:[
         babel({
