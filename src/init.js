@@ -1,6 +1,7 @@
 import {initState} from './state'
 
 import {compileToFunction} from './compiler/index.js'
+import { mountComponent  } from './lifecycle';
 
 // 在原型上添加一个init方法
 export function initMixin(Vue){
@@ -34,7 +35,9 @@ export function initMixin(Vue){
             const render = compileToFunction(template);
             options.render = render;
             // 我们需要将template 转化成render方法 vue1.0 2.0虚拟dom 
-            console.log(render);
+            console.log(render,options.render);
+            //渲染当前的组件 挂载当前的组件
+            mountComponent(vm,el)
         }
         
       

@@ -14,6 +14,18 @@
         value: value
       });
     }
+    function proxy(vm, source, key) {
+      Object.defineProperty(vm, key, {
+        get() {
+          return vm[source][key];
+        },
+
+        set() {
+          vm[source][key] = newValue;
+        }
+
+      });
+    }
 
     //我要重写数组的哪些方法 7个 push shift unshif pop reverse sort splice  
     let oldArraymethods = Array.prototype; // value.__proto__ = arrayMethods; 向上查找 先查找自己重写的方法 如果没有就会查找 arrayMethods原型上的方法
@@ -158,7 +170,12 @@
 
     function initData(vm) {
       let data = vm.$options.data;
-      data = vm._data = typeof data === 'function' ? data.call(vm) : data;
+      data = vm._data = typeof data === 'function' ? data.call(vm) : data; // 为了让用户更好的使用 我希望 可以使用vm.xxx
+
+      for (let key in data) {
+        proxy(vm, '_data', key);
+      }
+
       observe(data);
     }
 
@@ -385,10 +402,11 @@
       //  <div id="app"><p>hello {{name}}</p> hello</div>
       // 将ast树 再次转化成js的语法
       //  _c("div",{id:app},_c("p",undefined,_v('hello' + _s(name) )),_v('hello')) 
-      // 所有的模板引擎实现 都需要new Function + with
+      // 所有的模板引擎实现 都需要new Function + with  都需要function + width
       // vue的render 他返回的是虚拟dom
 
-      return function render() {};
+      let renderFn = new Function(`with(this){ return ${code}}`);
+      return renderFn;
     } //   hellpo
     //      <p></p>
     // </div>
@@ -410,6 +428,26 @@
     //         ]
     //     }]
     // }
+
+    function lifecycleMixin(Vue) {
+      Vue.prototype._update = function (vnode) {};
+    }
+    function mountComponent(vm, el) {
+      vm.$options;
+      vm.$el = el; //真是的dom元素
+      //渲染页面
+      //Watcher 用来渲染的
+      // vm._render 通过解析的render方法 渲染出虚拟dom
+      //vm.update 通过虚拟dom 创建出真是的dom
+
+      let updateComponent = () => {
+        //无论是渲染还是更新都会调用此方法
+        vm._update(vm._render());
+      }; //渲染watcher  每一个组件都有一个watcher
+
+
+      new Watcher(vm, updateComponent, () => {}, true);
+    }
 
     function initMixin(Vue) {
       // 初始化流程
@@ -444,9 +482,15 @@
           const render = compileToFunction(template);
           options.render = render; // 我们需要将template 转化成render方法 vue1.0 2.0虚拟dom 
 
-          console.log(render);
+          console.log(render, options.render); //渲染当前的组件 挂载当前的组件
+
+          mountComponent(vm, el);
         }
       };
+    }
+
+    function renderMixin(Vue) {
+      Vue.prototype._render = function () {};
     }
 
     function Vue(options) {
@@ -454,6 +498,8 @@
     }
 
     initMixin(Vue);
+    renderMixin(Vue);
+    lifecycleMixin(Vue);
 
     return Vue;
 

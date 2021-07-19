@@ -72,12 +72,11 @@ export function compileToFunction(template) {
     //  <div id="app"><p>hello {{name}}</p> hello</div>
     // 将ast树 再次转化成js的语法
     //  _c("div",{id:app},_c("p",undefined,_v('hello' + _s(name) )),_v('hello')) 
-    // 所有的模板引擎实现 都需要new Function + with
+    // 所有的模板引擎实现 都需要new Function + with  都需要function + width
    
     // vue的render 他返回的是虚拟dom
-    return function render(){
-
-    }
+    let renderFn = new Function(`with(this){ return ${code}}`)
+        return renderFn;
 }
 
 

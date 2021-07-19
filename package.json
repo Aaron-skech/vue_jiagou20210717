@@ -5,9 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:dev":"rollup -c",
+    "build:dev": "rollup -c",
     "serve": "cross-env ENV=development rollup -c -w"
-    
   },
   "keywords": [],
   "author": "",
