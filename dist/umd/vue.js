@@ -397,8 +397,7 @@
       // 1) 解析html字符串 将html字符串 => ast语法树
       let root = parseHTML(template); // 需要将ast语法树生成最终的render函数  就是字符串拼接 （模板引擎）
 
-      let code = generate(root);
-      console.log(code); // 核心思路就是将模板转化成 下面这段字符串
+      let code = generate(root); // 核心思路就是将模板转化成 下面这段字符串
       //  <div id="app"><p>hello {{name}}</p> hello</div>
       // 将ast树 再次转化成js的语法
       //  _c("div",{id:app},_c("p",undefined,_v('hello' + _s(name) )),_v('hello')) 
@@ -446,14 +445,63 @@
 
     }
 
+    function patch(oldVnode, vnode) {
+      console.log(oldVnode, vnode); //递归创建真实的节点 替换老的节点
+      //1 判断是要更新 还是渲染
+
+      const isRealElement = oldVnode.nodeType;
+
+      if (isRealElement) {
+        const oldElm = oldVnode;
+        const parentElm = oldElm.parentNode; //body 需要用父节点进行操作
+
+        let el = createElm(vnode);
+        parentElm.insertBefore(el, oldElm.nextSibling);
+        parentElm.removeChild(oldElm);
+      }
+    }
+
+    function createElm(vnode) {
+      let {
+        tag,
+        children,
+        key,
+        data,
+        text
+      } = vnode; // 是标签 创建标签
+      //如果不是标签就是文本
+
+      if (typeof tag === 'string') {
+        vnode.el = document.createElement(tag);
+        updateProperties(vnode);
+        children.forEach(child => {
+          return vnode.el.appendChild(createElm(child));
+        });
+      } else {
+        //虚拟dom上面映射着真实dom 方便后续更新操作
+        vnode.el = document.createTextNode(text);
+      }
+
+      return vnode.el;
+    } //更新属性
+
+
+    function updateProperties(vnode) {
+      let newProps = vnode.data || {};
+      let el = vnode.el;
+      console.log(newProps, el);
+    }
+
     function lifecycleMixin(Vue) {
       Vue.prototype._update = function (vnode) {
-        console.log(vnode, 'vnode');
+        //要通过虚拟节点 渲染出真是的dom
+        const vm = this;
+        vm.$el = patch(vm.$el, vnode); // 需要用虚拟节点创建出真实节点 替换掉真是的$el
       };
     }
     function mountComponent(vm, el) {
       vm.$options;
-      vm.$el = el; //真是的dom元素
+      vm.$el = el; //真实的dom元素
       //渲染页面
       //Watcher 用来渲染的
       // vm._render 通过解析的render方法 渲染出虚拟dom
@@ -500,8 +548,8 @@
 
           const render = compileToFunction(template);
           options.render = render; // 我们需要将template 转化成render方法 vue1.0 2.0虚拟dom 
-
-          console.log(render, options.render); //渲染当前的组件 挂载当前的组件
+          //  console.log(render,options.render);
+          //渲染当前的组件 挂载当前的组件
 
           mountComponent(vm, el);
         }
@@ -538,7 +586,6 @@
       //_v 创建文本的虚拟节点
       //_s JSON.stringify
       Vue.prototype._c = function () {
-        console.log(arguments, 'arg');
         return createElement(...arguments);
       };
 

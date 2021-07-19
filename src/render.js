@@ -6,7 +6,6 @@ export function renderMixin(Vue){
     //_s JSON.stringify
 
     Vue.prototype._c = function () {
-        console.log(arguments,'arg')
         return createElement(...arguments);  
     }
     Vue.prototype._v = function (text) {

@@ -67,7 +67,6 @@ export function compileToFunction(template) {
     let root = parseHTML(template);
     // 需要将ast语法树生成最终的render函数  就是字符串拼接 （模板引擎）
     let code = generate(root);
-    console.log(code)
     // 核心思路就是将模板转化成 下面这段字符串
     //  <div id="app"><p>hello {{name}}</p> hello</div>
     // 将ast树 再次转化成js的语法

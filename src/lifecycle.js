@@ -1,8 +1,11 @@
 import Watcher from "./observer/watcher";
+import { patch } from './vdom/patch';
 export function lifecycleMixin(Vue) {
 
     Vue.prototype._update = function(vnode) {
-        console.log(vnode,'vnode')
+        //要通过虚拟节点 渲染出真是的dom
+        const vm = this;
+        vm.$el = patch(vm.$el,vnode);// 需要用虚拟节点创建出真实节点 替换掉真是的$el
         
     }
     
@@ -11,7 +14,7 @@ export  function mountComponent(vm,el){
 
     const options = vm.$options;
 
-    vm.$el = el;//真是的dom元素
+    vm.$el = el;//真实的dom元素
     //渲染页面
 
     //Watcher 用来渲染的
