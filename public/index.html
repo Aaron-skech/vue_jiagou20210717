@@ -7,8 +7,9 @@
     <title>Document</title>
 </head>
 <body>
-    <div id="app">
-        <p>{{name}}</p>
+    <div id="app" style="color: red; background-color: blue;">
+        <p>jjjj{{name}}</p>
+        <span>{{age}}</span>
     </div>
     <script src="/dist/umd/vue.js"></script>
     <script>
@@ -17,7 +18,7 @@
             el:'#app',
             data(){
                 return{
-                    name:[{a:1},{b:2}],
+                    name:'Aaron',
                     age:12,
                     address:{aa:'kkkk'
                     }

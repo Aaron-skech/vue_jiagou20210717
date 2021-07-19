@@ -429,8 +429,27 @@
     //     }]
     // }
 
+    class Watcher {
+      constructor(vm, exprOrFn, callback, options) {
+        this.vm = vm;
+        this.exprOrFn = exprOrFn;
+        this.callback = callback;
+        this.options = options;
+        this.getter = exprOrFn; //将内部传过来的回调函数放到getter 属性上
+
+        this.get();
+      }
+
+      get() {
+        this.getter();
+      }
+
+    }
+
     function lifecycleMixin(Vue) {
-      Vue.prototype._update = function (vnode) {};
+      Vue.prototype._update = function (vnode) {
+        console.log(vnode, 'vnode');
+      };
     }
     function mountComponent(vm, el) {
       vm.$options;
@@ -438,7 +457,7 @@
       //渲染页面
       //Watcher 用来渲染的
       // vm._render 通过解析的render方法 渲染出虚拟dom
-      //vm.update 通过虚拟dom 创建出真是的dom
+      //vm.update 通过虚拟dom 创建出真是的dom _c _v _s 
 
       let updateComponent = () => {
         //无论是渲染还是更新都会调用此方法
@@ -489,8 +508,56 @@
       };
     }
 
+    function createElement(tag, data = {}, ...children) {
+      let key = data.key;
+
+      if (key) {
+        delete data.key;
+      }
+
+      return vnode(tag, data, key, children, undefined);
+    }
+    function createTextNode(text) {
+      return vnode(undefined, undefined, undefined, undefined, text);
+    }
+
+    function vnode(tag, data, key, children, text) {
+      return {
+        tag,
+        data,
+        key,
+        children,
+        text
+      }; //虚拟节点 就是通过_c _v 实现用对象来描述dom操作 （对象）
+      // 1) 将 template 转成 ast语法树 =》 生产render方法 =》 生成虚拟dom =》 真实dom 
+      // 重新生成虚拟dom =》 更新dom
+    }
+
     function renderMixin(Vue) {
-      Vue.prototype._render = function () {};
+      //_c 是创建元素的虚拟节点
+      //_v 创建文本的虚拟节点
+      //_s JSON.stringify
+      Vue.prototype._c = function () {
+        console.log(arguments, 'arg');
+        return createElement(...arguments);
+      };
+
+      Vue.prototype._v = function (text) {
+        return createTextNode(text);
+      };
+
+      Vue.prototype._s = function (val) {
+        return val === null ? '' : typeof val === 'object' ? JSON.stringify(val) : val;
+      };
+
+      Vue.prototype._render = function () {
+        const vm = this;
+        const {
+          render
+        } = this.$options;
+        let vnode = render.call(vm);
+        return vnode;
+      };
     }
 
     function Vue(options) {
