@@ -6,7 +6,9 @@ const attribute = /^\s*([^\s"'<>\/=]+)(?:\s*(=)\s*(?:"([^"]*)"+|'([^']*)'+|([^\s
 const startTagClose = /^\s*(\/?)>/; // 匹配标签结束的 >  <div>
 const defaultTagRE = /\{\{((?:.|\r?\n)+?)\}\}/g
 
-let root = null; // ast语法树的树根
+
+export function parseHTML(html) {
+    let root = null; // ast语法树的树根
 let currentParent; // 标识当前父亲是谁
 let stack = [];
 const ELEMENT_TYPE = 1;
@@ -48,7 +50,6 @@ function end(tagName) {
         currentParent.children.push(element); // 实现了一个树的父子关系
     }
 }
-export function parseHTML(html) {
     // 不停的去解析html字符串
     while (html) {
         let textEnd = html.indexOf('<');

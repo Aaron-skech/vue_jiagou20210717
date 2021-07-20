@@ -7,7 +7,7 @@
     <title>Document</title>
 </head>
 <body>
-    <div id="app" style="color: red; background-color: blue;">
+    <div id="app" style="color: red;background-color: blue;">
         <p>jjjj{{name}}</p>
         <span>{{age}}</span>
     </div>
@@ -26,7 +26,12 @@
                     }
 
                 }
+            },
+            beforeCreate(){
+                console.log("user")
+
             }
+
         })
      
    

@@ -1,5 +1,4 @@
 export function patch(oldVnode,vnode) {
-    console.log(oldVnode,vnode);
 
     //递归创建真实的节点 替换老的节点
     //1 判断是要更新 还是渲染
@@ -46,6 +45,15 @@ function updateProperties(vnode) {
 
     let newProps = vnode.data || {};
     let el = vnode.el;
-    console.log(newProps,el)
-    
+    for(let key in newProps){
+        if(key === 'style'){
+            for(let styleName in newProps.style){
+                el.style[styleName] = newProps.style[styleName];
+            }
+        }else if(key === 'class'){
+            el.className = newProps.class;
+        }else{
+            el.setAttribute(key,newProps[key]);
+        }
+    } 
 }
