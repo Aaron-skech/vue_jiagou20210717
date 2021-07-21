@@ -20,7 +20,7 @@
          return vm[source][key];
        },
 
-       set() {
+       set(newValue) {
          vm[source][key] = newValue;
        }
 
@@ -72,7 +72,6 @@
        } else if (child[key] == null) {
          options[key] = parent[key];
        } else {
-         console.log(child[key]);
          options[key] = child[key];
        }
      }
@@ -116,6 +115,44 @@
        return result;
      };
    });
+
+   let id$1 = 0;
+
+   class Dep {
+     constructor() {
+       this.id = id$1++;
+       this.subs = [];
+     }
+
+     addSub(watcher) {
+       console.log("__________________");
+       this.subs.push(watcher);
+       console.log(this.subs);
+     }
+
+     depend() {
+       //让这个water记住dep
+       //this.subs.push(Dep.target);
+       Dep.target.addDep(this);
+     }
+
+     notify() {
+       this.subs.forEach(watcher => watcher.update());
+     }
+
+   }
+
+   let stack = []; //目前可以做到将watcher 保留起来 和移除的功能
+
+   function pushTarget(watcher) {
+     console.log(watcher, 'watch');
+     Dep.target = watcher;
+     stack.push(watcher);
+   }
+   function popTarget() {
+     stack.pop();
+     Dep.target = stack[stack.length - 1];
+   }
 
    class Observer {
      // constructor(value){  // 仅仅是初始化的操作
@@ -172,6 +209,7 @@
    }
 
    function defineReactive(data, key, value) {
+     let dep = new Dep();
      observe(value); // 递归实现深度检测
 
      Object.defineProperty(data, key, {
@@ -180,6 +218,15 @@
 
        get() {
          //  获取值的时候做一些操作
+         console.log('取值'); //每一个属性都对应着一个自己watcher
+
+         if (Dep.target) {
+           //取值的时候收集依赖（watcher）
+           dep.depend(); //意味着要将watcher存起来
+
+           console.log(dep.subs);
+         }
+
          return value;
        },
 
@@ -190,6 +237,7 @@
 
          console.log('更新数据');
          value = newValue;
+         dep.notify(); //通知依赖的watcher进行一个更新的操作
        }
 
      });
@@ -481,19 +529,43 @@
    //     }]
    // }
 
+   let id = 0;
+
    class Watcher {
      constructor(vm, exprOrFn, callback, options) {
        this.vm = vm;
        this.exprOrFn = exprOrFn;
        this.callback = callback;
        this.options = options;
+       this.id = id++;
        this.getter = exprOrFn; //将内部传过来的回调函数放到getter 属性上
 
-       this.get();
+       this.depsId = new Set();
+       this.deps = [];
+       this.get(); //调用getter方法会让watcher执行
+     }
+
+     addDep(dep) {
+       //watcher里面不能放重复的dep
+       let id = dep.id;
+
+       if (!this.depsId.has(id)) {
+         this.depsId.add(id);
+         this.deps.push(dep);
+         dep.addSub(this);
+       }
      }
 
      get() {
-       this.getter();
+       pushTarget(this); // 在渲染之前watcher存起来
+
+       this.getter(); //渲染watcher的执行
+
+       popTarget(); //渲染之后移除watcher
+     }
+
+     update() {
+       this.get();
      }
 
    }
@@ -510,7 +582,9 @@
        let el = createElm(vnode);
        parentElm.insertBefore(el, oldElm.nextSibling);
        parentElm.removeChild(oldElm);
-     }
+       return el;
+     } // 需要将渲染好的结果返回 
+
    }
 
    function createElm(vnode) {
@@ -684,7 +758,6 @@
          render
        } = this.$options;
        let vnode = render.call(vm);
-       console.log(render, 'render');
        return vnode;
      };
    }

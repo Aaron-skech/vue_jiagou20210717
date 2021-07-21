@@ -8,8 +8,8 @@
 </head>
 <body>
     <div id="app" style="color: red;background-color: blue;">
-        <p>jjjj{{name}}</p>
-        <span>{{age}}</span>
+        <p>{{age}}{{age}}{{age}}</p>
+        <span>{{name}}</span>
     </div>
 
 
@@ -22,17 +22,23 @@
                 return{
                     name:'Aaron',
                     age:12,
-                    address:{aa:'kkkk'
-                    }
+                    address:{aa:'kkkk'},
+                    qqq:[1,2,3,4,5]
 
                 }
-            },
-            beforeCreate(){
-                console.log("user")
-
             }
-
         })
+
+        setTimeout(() => {
+            vm.name = 'renrte';//依赖收集 
+            //希望数据变化可以自动的重新执行我们的渲染watcher
+        },1000)
+        setTimeout(() => {
+            vm.name = '4444';//依赖收集 
+            //希望数据变化可以自动的重新执行我们的渲染watcher
+        },2000)
+
+
      
    
        

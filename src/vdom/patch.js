@@ -11,9 +11,9 @@ export function patch(oldVnode,vnode) {
         let el = createElm(vnode);
         parentElm.insertBefore(el,oldElm.nextSibling);
         parentElm.removeChild(oldElm);
+          return el;
     }
-    
-  
+        // 需要将渲染好的结果返回 
 }
 
 function  createElm(vnode) {

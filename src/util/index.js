@@ -14,7 +14,7 @@ export function proxy(vm,source,key){
          get(){
               return vm[source][key];
          },
-         set(){
+         set(newValue){
               vm[source][key] = newValue;
 
          }
@@ -81,7 +81,6 @@ export function mergeOptions(parent,child) {
             options[key] = parent[key];
 
         }else{
-            console.log(child[key])
             options[key] = child[key];
 
         }

@@ -13,14 +13,12 @@ export function initGlobalAPI(Vue) {
         b:3,
         beforeCreate(){
             console.log('fn1')
-
         }
     })
     Vue.mixin({
         b:2,
         beforeCreate(){
             console.log('fn2')
-
         }
     })
 }

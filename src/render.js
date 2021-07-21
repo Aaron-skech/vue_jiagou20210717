@@ -18,7 +18,6 @@ export function renderMixin(Vue){
         const vm = this;
         const { render } = this.$options;
          let vnode =   render.call(vm);
-         console.log(render,'render')
          return vnode;
     }
 }
