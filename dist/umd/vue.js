@@ -44,7 +44,7 @@
    LIFECYCLE_HOOKS.forEach(hook => {
      strats[hook] = mergeHook;
    });
-   function mergeOptions(parent, child) {
+   function mergeOptions$1(parent, child) {
      // debugger;
      const options = {};
 
@@ -553,14 +553,22 @@
    // }
 
    let callbacks = [];
+   let waiting = false;
 
    function flushCallback() {
      callbacks.forEach(cb => cb());
+     waiting = false;
+     callbacks = [];
    }
 
    function nextTick(cb) {
+     //多次调用nextTick 如果还没有刷新 就把回调函数放到数组中去
      callbacks.push(cb);
-     setTimeout(flushCallback, 0);
+
+     if (waiting === false) {
+       setTimeout(flushCallback, 0);
+       waiting = true;
+     }
    }
 
    let queue = [];
@@ -728,14 +736,14 @@
      }
    }
 
-   function initMixin(Vue) {
+   function initMixin$1(Vue) {
      // 初始化流程
      Vue.prototype._init = function (options) {
        // 数据的劫持
        const vm = this; // vue中使用 this.$options 指代的就是用户传递的属性
        //将用户传递的和全局的进行一个合并
 
-       vm.$options = mergeOptions(vm.constructor.options, options);
+       vm.$options = mergeOptions$1(vm.constructor.options, options);
        callHook(vm, 'beforeCreate'); //初始化状态之前调用
        // 初始化状态
 
@@ -827,38 +835,24 @@
      };
    }
 
-   function initGlobalAPI(Vue) {
-     Vue.options = {};
-
+   function initMixin(Vue) {
      Vue.mixin = function (mixin) {
        //如何实现两个对象的合并
        this.options = mergeOptions(this.options, mixin);
      }; // 生命周期的合并策略[beforeCreate,beforeCreate];
 
+   }
 
-     Vue.mixin({
-       b: 3,
-
-       beforeCreate() {
-         console.log('fn1');
-       }
-
-     });
-     Vue.mixin({
-       b: 2,
-
-       beforeCreate() {
-         console.log('fn2');
-       }
-
-     });
+   function initGlobalAPI(Vue) {
+     Vue.options = {};
+     initMixin(Vue);
    }
 
    function Vue(options) {
      this._init(options);
    }
 
-   initMixin(Vue);
+   initMixin$1(Vue);
    renderMixin(Vue);
    lifecycleMixin(Vue); //初始化 全局的api
 
