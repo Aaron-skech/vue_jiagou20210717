@@ -112,6 +112,8 @@
          ob.observerArray(inserted); //将新增的数据继续进行观测
        }
 
+       ob.dep.notify(); //如果调用push方法 我会通知当前的dep去更新
+
        return result;
      };
    });
@@ -125,9 +127,7 @@
      }
 
      addSub(watcher) {
-       console.log("__________________");
        this.subs.push(watcher);
-       console.log(this.subs);
      }
 
      depend() {
@@ -145,7 +145,6 @@
    let stack = []; //目前可以做到将watcher 保留起来 和移除的功能
 
    function pushTarget(watcher) {
-     console.log(watcher, 'watch');
      Dep.target = watcher;
      stack.push(watcher);
    }
@@ -176,7 +175,9 @@
      //     }
      // }
      constructor(value) {
+       this.dep = new Dep(); //单独给数组用的
        //value.__ob__ = this;//我给每一个监控的对象都增加一个__ob__属性
+
        def(value, '__ob__', this);
 
        if (Array.isArray(value)) {
@@ -209,8 +210,10 @@
    }
 
    function defineReactive(data, key, value) {
-     let dep = new Dep();
-     observe(value); // 递归实现深度检测
+     let dep = new Dep(); //这个dep 是为了给对象使用的
+     // 这个value 可能是数组 也可能是对象 返回的结果是 Observer的实例 即当前value所对应的observer
+
+     let childOb = observe(value); // 递归实现深度检测
 
      Object.defineProperty(data, key, {
        configurable: true,
@@ -224,7 +227,14 @@
            //取值的时候收集依赖（watcher）
            dep.depend(); //意味着要将watcher存起来
 
-           console.log(dep.subs);
+           if (childOb) {
+             childOb.dep.depend(); //收集数组的相关依赖
+             //如果数组中还有数组
+
+             if (Array.isArray(value)) {
+               dependArray(value);
+             }
+           }
          }
 
          return value;
@@ -241,6 +251,19 @@
        }
 
      });
+   }
+
+   function dependArray(value) {
+     for (let i = 0; i < value.length; i++) {
+       let current = value[i]; //将数组中的每一个都取出来,数据变化后 也去更新视图
+       // 数组中的数组的依赖收集
+
+       current.__ob__ && current.__ob__.dep.depend();
+
+       if (Array.isArray(current)) {
+         dependArray(current);
+       }
+     }
    }
 
    function observe(data) {
@@ -529,6 +552,31 @@
    //     }]
    // }
 
+   function nextTick(cb) {
+     cb();
+   }
+
+   let queue = [];
+   let has = {};
+
+   function flushSchedularQueue() {
+     queue.forEach(watcher => watcher.run());
+     queue = [];
+     has = {};
+   }
+
+   function queueWatcher(watcher) {
+     const id = watcher.id;
+
+     if (has[id] == null) {
+       queue.push(watcher);
+       has[id] = true; //宏认为和微任务 
+       // Vue.nextTick = promise / mutationObserver / setImmediate/ setTimeout  优雅降级  
+
+       nextTick(flushSchedularQueue);
+     }
+   }
+
    let id = 0;
 
    class Watcher {
@@ -565,6 +613,12 @@
      }
 
      update() {
+       //等待这 一起来更新 因为每次调用update的时候 都放入了 watcher
+       //this.get();
+       queueWatcher(this);
+     }
+
+     run() {
        this.get();
      }
 
@@ -647,7 +701,8 @@
      callHook(vm, 'beforeMount'); //挂载之前调用
 
      let updateComponent = () => {
-       //无论是渲染还是更新都会调用此方法
+       console.log('update'); //无论是渲染还是更新都会调用此方法
+
        vm._update(vm._render());
      }; //渲染watcher  每一个组件都有一个watcher
 

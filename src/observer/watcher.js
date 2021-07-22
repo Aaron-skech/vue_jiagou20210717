@@ -1,4 +1,5 @@
-import {pushTarget,popTarget} from './dep.js'
+import {pushTarget,popTarget} from './dep.js';
+import {queueWatcher} from './schedular.js'
 let id = 0;
 class Watcher{
     constructor(vm,exprOrFn,callback,options){
@@ -29,6 +30,12 @@ class Watcher{
         popTarget();//渲染之后移除watcher
     }
     update(){
+        //等待这 一起来更新 因为每次调用update的时候 都放入了 watcher
+        //this.get();
+
+        queueWatcher(this);
+    }
+    run(){
         this.get();
     }
 

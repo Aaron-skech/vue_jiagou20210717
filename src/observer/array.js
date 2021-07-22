@@ -35,6 +35,7 @@ methods.forEach(methods=>{
             if(inserted){
                 ob.observerArray(inserted)//将新增的数据继续进行观测
             }
+            ob.dep.notify();//如果调用push方法 我会通知当前的dep去更新
            return result;
     }
 })

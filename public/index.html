@@ -8,8 +8,7 @@
 </head>
 <body>
     <div id="app" style="color: red;background-color: blue;">
-        <p>{{age}}{{age}}{{age}}</p>
-        <span>{{name}}</span>
+       {{arr}}
     </div>
 
 
@@ -20,23 +19,20 @@
             el:'#app',
             data(){
                 return{
-                    name:'Aaron',
-                    age:12,
-                    address:{aa:'kkkk'},
-                    qqq:[1,2,3,4,5]
+                     arr:[1]
 
                 }
             }
         })
 
-        setTimeout(() => {
-            vm.name = 'renrte';//依赖收集 
+      
+            vm.arr.push(1);
+            vm.arr.push(1);
+            vm.arr.push(1);
+            vm.arr.push(1);
             //希望数据变化可以自动的重新执行我们的渲染watcher
-        },1000)
-        setTimeout(() => {
-            vm.name = '4444';//依赖收集 
-            //希望数据变化可以自动的重新执行我们的渲染watcher
-        },2000)
+            console.log(vm.$el.innerHTML)
+       
 
 
      

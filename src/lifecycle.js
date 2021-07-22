@@ -23,6 +23,7 @@ export  function mountComponent(vm,el){
     //vm.update 通过虚拟dom 创建出真是的dom _c _v _s 
     callHook(vm,'beforeMount');//挂载之前调用
     let updateComponent = () => {
+        console.log('update')
         //无论是渲染还是更新都会调用此方法
         vm._update(vm._render());
     }
