@@ -31,8 +31,12 @@
             vm.arr.push(1);
             vm.arr.push(1);
             //希望数据变化可以自动的重新执行我们的渲染watcher
-            console.log(vm.$el.innerHTML)
-       
+
+            vm.$nextTick(()=>{
+                console.log(vm.$el.innerHTML)
+            })
+           
+          
 
 
      

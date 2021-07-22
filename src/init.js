@@ -2,6 +2,7 @@ import {initState} from './state.js'
 import {compileToFunction} from './compiler/index.js'
 import { mountComponent,callHook  } from './lifecycle.js';
 import { mergeOptions } from './util/index.js';
+import { nextTick } from './util/next-tick.js';
 
 // 在原型上添加一个init方法
 export function initMixin(Vue){
@@ -24,7 +25,7 @@ export function initMixin(Vue){
         }
     }
     Vue.prototype.$mount = function (el) {
-        
+
         const vm = this;
         const options = vm.$options;
         el = document.querySelector(el); 
@@ -45,4 +46,6 @@ export function initMixin(Vue){
         
       
     }
+    //用户调用的nextTick
+    Vue.prototype.$nextTick= nextTick;
 }

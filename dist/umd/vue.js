@@ -552,8 +552,15 @@
    //     }]
    // }
 
+   let callbacks = [];
+
+   function flushCallback() {
+     callbacks.forEach(cb => cb());
+   }
+
    function nextTick(cb) {
-     cb();
+     callbacks.push(cb);
+     setTimeout(flushCallback, 0);
    }
 
    let queue = [];
@@ -763,7 +770,10 @@
 
          mountComponent(vm, el);
        }
-     };
+     }; //用户调用的nextTick
+
+
+     Vue.prototype.$nextTick = nextTick;
    }
 
    function createElement(tag, data = {}, ...children) {
