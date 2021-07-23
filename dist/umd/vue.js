@@ -44,7 +44,21 @@
    LIFECYCLE_HOOKS.forEach(hook => {
      strats[hook] = mergeHook;
    });
-   function mergeOptions$1(parent, child) {
+
+   function mergeAssets(parentVal, childVal) {
+     const res = Object.create(parentVal);
+
+     if (childVal) {
+       for (let key in childVal) {
+         res[key] = childVal[key];
+       }
+     }
+
+     return res;
+   }
+
+   strats.components = mergeAssets;
+   function mergeOptions(parent, child) {
      // debugger;
      const options = {};
 
@@ -78,6 +92,14 @@
 
      return options;
    }
+   const isReservedTag = tagName => {
+     let str = 'p,div,span,input,button,form';
+     let obj = {};
+     str.split(',').forEach(tag => {
+       obj[tag] = true;
+     });
+     return obj[tagName];
+   };
 
    //我要重写数组的哪些方法 7个 push shift unshif pop reverse sort splice  
    let oldArraymethods = Array.prototype; // value.__proto__ = arrayMethods; 向上查找 先查找自己重写的方法 如果没有就会查找 arrayMethods原型上的方法
@@ -743,7 +765,7 @@
        const vm = this; // vue中使用 this.$options 指代的就是用户传递的属性
        //将用户传递的和全局的进行一个合并
 
-       vm.$options = mergeOptions$1(vm.constructor.options, options);
+       vm.$options = mergeOptions(vm.constructor.options, options);
        callHook(vm, 'beforeCreate'); //初始化状态之前调用
        // 初始化状态
 
@@ -784,26 +806,46 @@
      Vue.prototype.$nextTick = nextTick;
    }
 
-   function createElement(tag, data = {}, ...children) {
+   function createElement(vm, tag, data = {}, ...children) {
      let key = data.key;
 
      if (key) {
        delete data.key;
+     } //判断是标签还是组件
+
+
+     if (isReservedTag) {
+       return vnode(tag, data, key, children, undefined);
+     } else {
+       //组件 找到组件的定义
+       let Ctor = this.$options.components[tag];
+       return createComponent(vm, tag, data, key, children, Ctor);
+     }
+   }
+
+   function createComponent(vm, tag, data, key, children, Ctor) {
+     if (isObject(Ctor)) {
+       Ctor = vm.$options._base.extend(Ctor);
      }
 
-     return vnode(tag, data, key, children, undefined);
+     return vnode(`vue-component-${Ctor.cid}-${tag}`, data, key, undefined, {
+       Ctor,
+       children
+     });
    }
-   function createTextNode(text) {
+
+   function createTextNode(vm, text) {
      return vnode(undefined, undefined, undefined, undefined, text);
    }
 
-   function vnode(tag, data, key, children, text) {
+   function vnode(tag, data, key, children, text, componentOptions) {
      return {
        tag,
        data,
        key,
        children,
-       text
+       text,
+       componentOptions
      }; //虚拟节点 就是通过_c _v 实现用对象来描述dom操作 （对象）
      // 1) 将 template 转成 ast语法树 =》 生产render方法 =》 生成虚拟dom =》 真实dom 
      // 重新生成虚拟dom =》 更新dom
@@ -814,11 +856,11 @@
      //_v 创建文本的虚拟节点
      //_s JSON.stringify
      Vue.prototype._c = function () {
-       return createElement(...arguments);
+       return createElement(this, ...arguments);
      };
 
      Vue.prototype._v = function (text) {
-       return createTextNode(text);
+       return createTextNode(this, text);
      };
 
      Vue.prototype._s = function (val) {
@@ -843,9 +885,58 @@
 
    }
 
+   const ASSETS_TYPE = ['component', 'directive', 'filter'];
+
+   function initAssetRegisters(Vue) {
+     ASSETS_TYPE.forEach(type => {
+       Vue[type] = function (id, definiton) {
+         if (type === 'component') {
+           //注册全局组件
+           definiton = this.options._base.extend(definiton);
+         }
+
+         this.options[type + 's'][id] = definiton;
+       };
+     });
+   }
+
+   function initExtend(Vue) {
+     //为什么要有子类和父类 new Vue (Vue的构造函数)
+     //创建子类 继承父类 扩展的时候扩展到自己的属性上
+     let cid = 0;
+
+     Vue.extend = function (extendOptions) {
+       console.log(extendOptions, 'extendOptions');
+
+       const Sub = function VueComponent(options) {
+         this._init(options);
+       };
+
+       Sub.cid = cid++;
+       Sub.prototype = Object.create(this.prototype);
+       Sub.prototype.constructor = Sub;
+       Sub.options = mergeOptions(this.options, extendOptions);
+       return Sub;
+     };
+   }
+
    function initGlobalAPI(Vue) {
      Vue.options = {};
-     initMixin(Vue);
+     initMixin(Vue); //初始化全局过滤器 指令 组件
+
+     ASSETS_TYPE.forEach(type => {
+       Vue.options[type + 's'] = {};
+     });
+     Vue.options._base = Vue; //_base 是Vue 的构造函数
+
+     initAssetRegisters(Vue); //注册Extend方法
+
+     initExtend(Vue); //  Vue.options.components = {
+     //  }
+     //  Vue.options.filters = {
+     // }
+     //  Vue.options.directives = {
+     // }
    }
 
    function Vue(options) {
