@@ -25,7 +25,7 @@ export function initMixin(Vue){
         }
     }
     Vue.prototype.$mount = function (el) {
-
+       
         const vm = this;
         const options = vm.$options;
         el = document.querySelector(el); 
@@ -41,6 +41,7 @@ export function initMixin(Vue){
             // 我们需要将template 转化成render方法 vue1.0 2.0虚拟dom 
           //  console.log(render,options.render);
             //渲染当前的组件 挂载当前的组件
+            console.log(vm,el)
             mountComponent(vm,el)
         }
         

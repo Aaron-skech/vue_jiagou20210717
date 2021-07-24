@@ -5,7 +5,6 @@ export default function initExtend(Vue) {
      let cid = 0;
 
     Vue.extend = function (extendOptions) {
-        console.log(extendOptions,'extendOptions')
         const Sub = function  VueComponent(options) {
             this._init(options); 
         }

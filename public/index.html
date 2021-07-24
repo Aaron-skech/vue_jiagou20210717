@@ -7,8 +7,8 @@
     <title>Document</title>
 </head>
 <body>
-    <div id="app" style="color: red;background-color: blue;">
-
+    <div id="app">
+        {{name}}
        <my-component></my-component>
        <my-component></my-component>
        <my-component></my-component>
@@ -19,14 +19,32 @@
     <script>
         //内部会调用 Vue.extend 返回一个组件的构造函数 通过new这个构造函数产生实例
         Vue.component('my-component',{
-            template:'<div>hello1111</div>'
+            template:'<div>hello1111</div>',
         })
         //更改组件的合并策略 
         const vm = new Vue({
             el:'#app',
             components:{
                 'my-component':{
-                    template:'<div>hello222222222</div>'
+                    template:'<div>hello222222222 <aa></aa></div>',
+                    created(){
+                        console.log('inner created')
+                            },
+                     mounted(){
+                        console.log('inner mounted')
+                     },
+                    components:{
+                        aa:{
+                            template:'<div>psy</div>',
+                            created(){
+                                console.log('outer created')
+                            },
+                            mounted(){
+                                 console.log('outer mounted')
+                                },
+                        }
+
+                    }
                 }
 
             },

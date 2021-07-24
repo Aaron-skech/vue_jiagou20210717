@@ -662,20 +662,41 @@
    }
 
    function patch(oldVnode, vnode) {
-     //递归创建真实的节点 替换老的节点
-     //1 判断是要更新 还是渲染
-     const isRealElement = oldVnode.nodeType;
+     if (!oldVnode) {
+       //这个是组件的挂载
+       let aa = createElm(vnode);
+       console.log(aa, '##############################');
+       return aa;
+     } else {
+       //递归创建真实的节点 替换老的节点
+       //1 判断是要更新 还是渲染
+       const isRealElement = oldVnode.nodeType;
 
-     if (isRealElement) {
-       const oldElm = oldVnode;
-       const parentElm = oldElm.parentNode; //body 需要用父节点进行操作
+       if (isRealElement) {
+         const oldElm = oldVnode;
+         const parentElm = oldElm.parentNode; //body 需要用父节点进行操作
 
-       let el = createElm(vnode);
-       parentElm.insertBefore(el, oldElm.nextSibling);
-       parentElm.removeChild(oldElm);
-       return el;
+         let el = createElm(vnode);
+         parentElm.insertBefore(el, oldElm.nextSibling);
+         parentElm.removeChild(oldElm);
+         console.log(el, '@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@');
+         return el;
+       }
      } // 需要将渲染好的结果返回 
 
+   }
+
+   function createComponent$1(vnode) {
+     let i = vnode.data;
+
+     if ((i = i.hook) && (i = i.init)) {
+       i(vnode);
+     }
+
+     if (vnode.componentInstance) {
+       //标识是组件
+       return true;
+     }
    }
 
    function createElm(vnode) {
@@ -689,10 +710,16 @@
      //如果不是标签就是文本
 
      if (typeof tag === 'string') {
+       if (createComponent$1(vnode)) {
+         //应该是返回的是真实的dom
+         return vnode.componentInstance.$el;
+       }
+
        vnode.el = document.createElement(tag);
        updateProperties(vnode);
        children.forEach(child => {
-         return vnode.el.appendChild(createElm(child));
+         // let aa == 
+         return `vnode`.el.appendChild(createElm(child));
        });
      } else {
        //虚拟dom上面映射着真实dom 方便后续更新操作
@@ -738,8 +765,7 @@
      callHook(vm, 'beforeMount'); //挂载之前调用
 
      let updateComponent = () => {
-       console.log('update'); //无论是渲染还是更新都会调用此方法
-
+       //无论是渲染还是更新都会调用此方法
        vm._update(vm._render());
      }; //渲染watcher  每一个组件都有一个watcher
 
@@ -798,6 +824,7 @@
          //  console.log(render,options.render);
          //渲染当前的组件 挂载当前的组件
 
+         console.log(vm, el);
          mountComponent(vm, el);
        }
      }; //用户调用的nextTick
@@ -814,11 +841,11 @@
      } //判断是标签还是组件
 
 
-     if (isReservedTag) {
+     if (isReservedTag(tag)) {
        return vnode(tag, data, key, children, undefined);
      } else {
        //组件 找到组件的定义
-       let Ctor = this.$options.components[tag];
+       let Ctor = vm.$options.components[tag];
        return createComponent(vm, tag, data, key, children, Ctor);
      }
    }
@@ -828,6 +855,17 @@
        Ctor = vm.$options._base.extend(Ctor);
      }
 
+     data.hook = {
+       init(vnode) {
+         //当前的组件实例就是
+         let child = vnode.componentInstance = new Ctor({
+           _isComponent: true
+         }); //组件的挂载
+
+         child.$mount();
+       }
+
+     };
      return vnode(`vue-component-${Ctor.cid}-${tag}`, data, key, undefined, {
        Ctor,
        children
@@ -906,8 +944,6 @@
      let cid = 0;
 
      Vue.extend = function (extendOptions) {
-       console.log(extendOptions, 'extendOptions');
-
        const Sub = function VueComponent(options) {
          this._init(options);
        };
