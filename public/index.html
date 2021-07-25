@@ -7,64 +7,67 @@
     <title>Document</title>
 </head>
 <body>
-    <div id="app">
-        {{name}}
-       <my-component></my-component>
-       <my-component></my-component>
-       <my-component></my-component>
-    </div>
-
-
     <script src="/dist/umd/vue.js"></script>
     <script>
         //内部会调用 Vue.extend 返回一个组件的构造函数 通过new这个构造函数产生实例
-        Vue.component('my-component',{
-            template:'<div>hello1111</div>',
-        })
-        //更改组件的合并策略 
-        const vm = new Vue({
-            el:'#app',
-            components:{
-                'my-component':{
-                    template:'<div>hello222222222 <aa></aa></div>',
-                    created(){
-                        console.log('inner created')
-                            },
-                     mounted(){
-                        console.log('inner mounted')
-                     },
-                    components:{
-                        aa:{
-                            template:'<div>psy</div>',
-                            created(){
-                                console.log('outer created')
-                            },
-                            mounted(){
-                                 console.log('outer mounted')
-                                },
-                        }
+    //     Vue.component('my-component',{
+    //         template:'<div>hello1111</div>',
+    //     })
+    //     //更改组件的合并策略 
+    //     const vm = new Vue({
+    //         el:'#app',
+    //         components:{
+    //             'my-component':{
+    //                 template:'<div>hello222222222 <aa></aa></div>',
+    //                 created(){
+    //                     console.log('inner created')
+    //                         },
+    //                  mounted(){
+    //                     console.log('inner mounted')
+    //                  },
+    //                 components:{
+    //                     aa:{
+    //                         template:'<div>psy</div>',
+    //                         created(){
+    //                             console.log('outer created')
+    //                         },
+    //                         mounted(){
+    //                              console.log('outer mounted')
+    //                             },
+    //                     }
 
-                    }
-                }
+    //                 }
+    //             }
 
-            },
-            data(){
-                return{
-                      name:'Aaron'
+    //         },
+    //         data(){
+    //             return{
+    //                   name:'Aaron'
 
-                }
-            }
-        })
+    //             }
+    //         }
+    //     })
 
-      console.log(Vue.options,vm)
+    //   console.log(Vue.options,vm)
        
             //希望数据变化可以自动的重新执行我们的渲染watcher
 
             // vm.$nextTick(()=>{
             //     console.log(vm.$el.innerHTML)
             // })
+
            
-          
+          //组件渲染的时候 会调用当前组件对应的构造函数 产生一个实例 
+          //我们可以new这个类 每个组件调用都会new一下
+
+          // 每个组件调用时都会调用 Vue.extend方法 创建一个构造函数
+
+          // 实例化组件时 会将当前组件和用户自定义选项合并 mergeOptions
+
+          // 通过创建实例 内部会调用子类的 _init() 方法 内部会再创建一个watcher
+        //将渲染的结果放到vm.$el上 = 组件的渲染结果
+
+
 
 
      
