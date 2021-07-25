@@ -67,7 +67,6 @@ function isSameVnode(oldVnode,newVnode){
 }
 function updateChildern(parent,oldChildren,newChildern){
     //vue采用双指针的方式进行比对
-      console.log(parent,oldChildren,newChildern)
     //vue在内部比对的过程中做了很多优化策略
      
     let oldStartIndex = 0;
@@ -83,7 +82,6 @@ function updateChildern(parent,oldChildren,newChildern){
     //在比对的过程中 新老节点有一方循环完毕就结束
     while(newStartIndex<= newEndIndex && oldStartIndex<= oldEndIndex){
           if(isSameVnode(newStartVnode,oldStartVnode)){
-             
                 //如果是同一个节点 就需要比对 元素的差异
               patch(oldStartVnode,newStartVnode);//比对开通节点
               oldStartVnode = oldChildren[++oldStartIndex];
@@ -92,11 +90,9 @@ function updateChildern(parent,oldChildren,newChildern){
           }
 
     }
-    console.log(newStartIndex,newEndIndex)
           if(newStartIndex <= newEndIndex){
-              for(let i = newStartIndex; i<newEndIndex; i++){
+              for(let i = newStartIndex; i<=newEndIndex; i++){
                   //将新增的元素直接进行插入
-                  console.log('kkkkkkkkkkkk')
                      parent.appendChild(createElm(newChildern[i]));
               }
           }
