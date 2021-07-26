@@ -78,6 +78,19 @@ function updateChildern(parent,oldChildren,newChildern){
     let newStartVnode = newChildern[0];
     let newEndIndex = newChildern.length -1;
     let newEndVnode = newChildern[newEndIndex];
+
+    const makeIndexByKey = (children)=>{
+        let map = {};
+        children.forEach((item,index)=>{
+            if(item.key){
+                map[item.key] = index;//根据key创建一个映射表
+            }
+        })
+        return map;
+    }
+
+    let map = makeIndexByKey(oldChildren);
+    console.log(map,'map')
     
     //在比对的过程中 新老节点有一方循环完毕就结束
     while(newStartIndex<= newEndIndex && oldStartIndex<= oldEndIndex){
@@ -107,7 +120,15 @@ function updateChildern(parent,oldChildren,newChildern){
                oldEndVnode = oldChildren[--oldEndIndex];
                newStartVnode =  newChildern[++newStartIndex]
           }else{
-              //暴力比对
+              //暴力比对 乱序
+              // 先根据老节点的key 做一个映射表 拿新的虚拟节点去映射表中去找 如果可查找到 则进行移动操作（移到头指针的前面位置）如果找不到
+              //则将元素插入即可
+              let moveIndex = map[newStartVnode.key];
+              if(!moveIndex){//不需要复用
+                parent.insertBefore(createElm(newStartVnode),oldStartVnode.el)
+
+              }
+
           }
          
 
