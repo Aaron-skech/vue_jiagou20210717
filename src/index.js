@@ -37,10 +37,10 @@ let vm2 = new Vue({
 })
 let render2 = compileToFunction(`<div b="1" id="aaa" style="color:blue">
             <div  style="background:green" key="Q">Q</div>
-            <div  style="background:yellow" key="A">A</div>
-            <div  style="background:blue" key="F">F</div>
+            <div  style="background:red" key="A">A</div>
+            <div  style="background:yellow" key="F">F</div>
             <div  style="background:blue" key="C">C</div>
-            <div  style="background:red" key="N">N</div>   
+            <div  style="background:blue" key="N">N</div>   
           </div>`)
 let newVnode = render2.call(vm2);
 

@@ -747,8 +747,12 @@
      console.log(map, 'map'); //在比对的过程中 新老节点有一方循环完毕就结束
 
      while (newStartIndex <= newEndIndex && oldStartIndex <= oldEndIndex) {
-       //优化向后插入的情况
-       if (isSameVnode(oldStartVnode, newStartVnode)) {
+       if (!oldStartVnode) {
+         //在老指针移动的过程中可能会遇到undefind
+         oldStartVnode = oldChildren[++oldStartIndex];
+       } else if (!oldEndVnode) {
+         oldEndVnode = oldChildren[--oldEndIndex];
+       } else if (isSameVnode(oldStartVnode, newStartVnode)) {
          //如果是同一个节点 就需要比对 元素的差异
          patch(oldStartVnode, newStartVnode); //比对开头节点
 
@@ -780,7 +784,16 @@
          if (!moveIndex) {
            //不需要复用
            parent.insertBefore(createElm(newStartVnode), oldStartVnode.el);
+         } else {
+           //如果在映射表中查找到了 则直接将元素移走 并置为空
+           let moveVnode = oldChildren[moveIndex]; //我要移动的那个元素
+
+           oldChildren[moveIndex] = undefined;
+           parent.insertBefore(moveVnode.el, oldStartVnode.el);
+           patch(moveVnode, newStartVnode);
          }
+
+         newStartVnode = newChildern[++newStartIndex];
        }
      }
 
@@ -789,6 +802,19 @@
          //将新增的元素直接进行插入 (可能从后插入 也可能从前插入) insertBefore
          let el = newChildern[newEndIndex + 1] == null ? null : newChildern[newEndIndex + 1].el;
          parent.insertBefore(createElm(newChildern[i]), el);
+       }
+     }
+
+     console.log(oldStartIndex, oldEndIndex);
+
+     if (oldStartIndex <= oldEndIndex) {
+       //老的开始和老的结束之间有元素 则将其删掉
+       for (let i = oldStartIndex; i <= oldEndIndex; i++) {
+         let child = oldChildren[i];
+
+         if (child != undefined) {
+           parent.removeChild(child.el);
+         }
        }
      }
    }
@@ -1126,10 +1152,10 @@
    });
    let render2 = compileToFunction(`<div b="1" id="aaa" style="color:blue">
             <div  style="background:green" key="Q">Q</div>
-            <div  style="background:yellow" key="A">A</div>
-            <div  style="background:blue" key="F">F</div>
+            <div  style="background:red" key="A">A</div>
+            <div  style="background:yellow" key="F">F</div>
             <div  style="background:blue" key="C">C</div>
-            <div  style="background:red" key="N">N</div>   
+            <div  style="background:blue" key="N">N</div>   
           </div>`);
    let newVnode = render2.call(vm2);
    patch(vnode, newVnode); //传入两个虚拟节点 再在内部进行比对
