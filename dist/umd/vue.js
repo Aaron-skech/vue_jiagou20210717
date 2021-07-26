@@ -727,27 +727,39 @@
      let oldStartIndex = 0;
      let oldStartVnode = oldChildren[0];
      let oldEndIndex = oldChildren.length - 1;
-     oldChildren[oldEndIndex];
+     let oldEndVnode = oldChildren[oldEndIndex];
      let newStartIndex = 0;
      let newStartVnode = newChildern[0];
      let newEndIndex = newChildern.length - 1;
-     newChildern[newEndIndex]; //在比对的过程中 新老节点有一方循环完毕就结束
+     let newEndVnode = newChildern[newEndIndex]; //在比对的过程中 新老节点有一方循环完毕就结束
 
      while (newStartIndex <= newEndIndex && oldStartIndex <= oldEndIndex) {
-       if (isSameVnode(newStartVnode, oldStartVnode)) {
+       //优化向后插入的情况
+       if (isSameVnode(oldStartVnode, newStartVnode)) {
          //如果是同一个节点 就需要比对 元素的差异
-         patch(oldStartVnode, newStartVnode); //比对开通节点
+         patch(oldStartVnode, newStartVnode); //比对开头节点
 
          oldStartVnode = oldChildren[++oldStartIndex];
          newStartVnode = newChildern[++newStartIndex];
-         console.log();
+       } else if (isSameVnode(oldEndVnode, newEndVnode)) {
+         //优化向前插入的情况
+         patch(oldEndVnode, newEndVnode);
+         oldEndVnode = oldChildren[--oldEndIndex];
+         newEndVnode = newChildern[--newEndIndex];
+       } else if (isSameVnode(oldStartVnode, newEndVnode)) {
+         //头移尾操作
+         patch(oldStartVnode, newEndVnode);
+         parent.insertBefore(oldStartVnode.el, oldEndVnode.el.nextSibling);
+         oldStartVnode = oldChildren[++oldStartIndex];
+         newEndVnode = newChildern[--newEndIndex];
        }
      }
 
      if (newStartIndex <= newEndIndex) {
        for (let i = newStartIndex; i <= newEndIndex; i++) {
-         //将新增的元素直接进行插入
-         parent.appendChild(createElm(newChildern[i]));
+         //将新增的元素直接进行插入 (可能从后插入 也可能从前插入) insertBefore
+         let el = newChildern[newEndIndex + 1] == null ? null : newChildern[newEndIndex + 1].el;
+         parent.insertBefore(createElm(newChildern[i]), el);
        }
      }
    }
@@ -1070,10 +1082,11 @@
      }
    });
    let render1 = compileToFunction(`<div a="1" id="app" style="background:red">
+           <div  style="background:green" key="D">D</div>
            <div style="background:red" key="A">A</div>
            <div  style="background:yellow" key="B">B</div>
            <div  style="background:blue" key="C">C</div>
-           <div  style="background:green" key="D">D</div>
+         
         </div>`);
    let vnode = render1.call(vm1);
    let el = createElm(vnode);
@@ -1085,11 +1098,10 @@
      }
    });
    let render2 = compileToFunction(`<div b="1" id="aaa" style="color:blue">
-            <div style="background:red" key="A">A</div>
+            <div  style="background:red" key="A">A</div>
             <div  style="background:yellow" key="B">B</div>
             <div  style="background:blue" key="C">C</div>
             <div  style="background:green" key="D">D</div>
-            <div  style="background:purple" key="E">E</div>
           </div>`);
    let newVnode = render2.call(vm2);
    patch(vnode, newVnode); //传入两个虚拟节点 再在内部进行比对

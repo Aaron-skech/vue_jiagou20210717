@@ -23,10 +23,11 @@ let vm1 = new Vue({
     data: { name: 'hello' }
 })
 let render1 = compileToFunction(`<div a="1" id="app" style="background:red">
+           <div  style="background:green" key="D">D</div>
            <div style="background:red" key="A">A</div>
            <div  style="background:yellow" key="B">B</div>
            <div  style="background:blue" key="C">C</div>
-           <div  style="background:green" key="D">D</div>
+         
         </div>`)
 let vnode = render1.call(vm1);
 
@@ -37,11 +38,10 @@ let vm2 = new Vue({
     data: { name: 'aaron', age: 23 }
 })
 let render2 = compileToFunction(`<div b="1" id="aaa" style="color:blue">
-            <div style="background:red" key="A">A</div>
+            <div  style="background:red" key="A">A</div>
             <div  style="background:yellow" key="B">B</div>
             <div  style="background:blue" key="C">C</div>
             <div  style="background:green" key="D">D</div>
-            <div  style="background:purple" key="E">E</div>
           </div>`)
 let newVnode = render2.call(vm2);
 
