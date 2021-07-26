@@ -95,11 +95,19 @@ function updateChildern(parent,oldChildren,newChildern){
               newEndVnode = newChildern[--newEndIndex];
 
           }else if(isSameVnode(oldStartVnode,newEndVnode)){
-               //头移尾操作
+               //头移尾操作 (涉及到 倒序变正序)
                patch(oldStartVnode,newEndVnode);
                parent.insertBefore(oldStartVnode.el,oldEndVnode.el.nextSibling);
                oldStartVnode = oldChildren[++oldStartIndex];
                newEndVnode = newChildern[--newEndIndex];
+          }else if(isSameVnode(oldEndVnode,newStartVnode)){
+              console.log(oldEndVnode,newStartVnode,parent)
+               patch(oldEndVnode,newStartVnode);
+               parent.insertBefore(oldEndVnode.el,oldStartVnode.el)
+               oldEndVnode = oldChildren[--oldEndIndex];
+               newStartVnode =  newChildern[++newStartIndex]
+          }else{
+              //暴力比对
           }
          
 

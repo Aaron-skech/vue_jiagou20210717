@@ -747,12 +747,18 @@
          oldEndVnode = oldChildren[--oldEndIndex];
          newEndVnode = newChildern[--newEndIndex];
        } else if (isSameVnode(oldStartVnode, newEndVnode)) {
-         //头移尾操作
+         //头移尾操作 (涉及到 倒序变正序)
          patch(oldStartVnode, newEndVnode);
          parent.insertBefore(oldStartVnode.el, oldEndVnode.el.nextSibling);
          oldStartVnode = oldChildren[++oldStartIndex];
          newEndVnode = newChildern[--newEndIndex];
-       }
+       } else if (isSameVnode(oldEndVnode, newStartVnode)) {
+         console.log(oldEndVnode, newStartVnode, parent);
+         patch(oldEndVnode, newStartVnode);
+         parent.insertBefore(oldEndVnode.el, oldStartVnode.el);
+         oldEndVnode = oldChildren[--oldEndIndex];
+         newStartVnode = newChildern[++newStartIndex];
+       } else ;
      }
 
      if (newStartIndex <= newEndIndex) {
@@ -1082,10 +1088,11 @@
      }
    });
    let render1 = compileToFunction(`<div a="1" id="app" style="background:red">
-           <div  style="background:green" key="D">D</div>
+           
            <div style="background:red" key="A">A</div>
            <div  style="background:yellow" key="B">B</div>
            <div  style="background:blue" key="C">C</div>
+           <div  style="background:green" key="D">D</div>
          
         </div>`);
    let vnode = render1.call(vm1);
@@ -1098,10 +1105,11 @@
      }
    });
    let render2 = compileToFunction(`<div b="1" id="aaa" style="color:blue">
+            <div  style="background:green" key="D">D</div>
             <div  style="background:red" key="A">A</div>
             <div  style="background:yellow" key="B">B</div>
             <div  style="background:blue" key="C">C</div>
-            <div  style="background:green" key="D">D</div>
+           
           </div>`);
    let newVnode = render2.call(vm2);
    patch(vnode, newVnode); //传入两个虚拟节点 再在内部进行比对
