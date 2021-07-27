@@ -5,7 +5,16 @@ export function lifecycleMixin(Vue) {
     Vue.prototype._update = function(vnode) {
         //要通过虚拟节点 渲染出真是的dom
         const vm = this;
-        vm.$el = patch(vm.$el,vnode);// 需要用虚拟节点创建出真实节点 替换掉真是的$el
+        // vm.$el = patch(vm.$el,vnode);// 需要用虚拟节点创建出真实节点 替换掉真是的$el
+        const preVnode = vm._vnode;//将虚拟节点的内容保存在_vnode上
+        //第一次的默认渲染不需要diff算法
+        vnode._vnode = vnode;//真实渲染 的内容
+        if(!preVnode){
+            vm.$el = patch(vm.$el,vnode)
+        }else{
+            vm.$el = patch(preVnode,vnode)
+        }
+
         
     }
     

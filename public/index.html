@@ -7,6 +7,10 @@
     <title>Document</title>
 </head>
 <body>
+    <div id="app">
+        {{name}}
+
+    </div>
     <script src="/dist/umd/vue.js"></script>
     <script>
         //内部会调用 Vue.extend 返回一个组件的构造函数 通过new这个构造函数产生实例
@@ -68,9 +72,16 @@
         //将渲染的结果放到vm.$el上 = 组件的渲染结果
 
 
+             let vm = new Vue({
+                 el:"#app",
+                 data:{
+                     name:'aaron'
+                 }
+             })
 
-
-     
+           setTimeout(()=>{
+               vm.name = 'caibao'
+           },2000)
    
        
 
